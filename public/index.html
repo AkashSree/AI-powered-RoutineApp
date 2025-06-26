@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang='eng'>
+<head>
+    <meta charset="UTF-8">
+    <title>To-do App</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        input { padding: 0.5rem; width: 300px;}
+        button { padding: 0.5rem 1rem; }
+        ul { list-style: none; padding: 0; }
+        li { margin: 0.5rem 0; }
+        .completed { text-decoration: line-through; color: gray;}
+    </style>
+</head>
+<body>
+
+    <h1>My To-Do List</h1>
+
+    <input id="taskInput" placeholder="New task.." />
+    <button id="addBtn">Add Task</button>
+
+    <ul id="todoList"></ul>
+
+    <script>
+        const API_URL = '/api/todos';
+
+        // Fetch and display todos
+
+        async function fetchTodos() { // When it get called ? (The things/todos have to displayed all the time right?)
+            const res = await fetch(API_URL); //Since the method is not specified , (By default the method of the fetch is GET)
+            const todos = await res.json(); //while doing this, check whether there's table , for this to happen (check for attribute 'completed')
+            const list = document.getElementById('todoList');
+            list.innerHTML = todos.map(t => `
+                <li>
+                    <input type="checkbox" ${t.completed ? 'checked' : ''}
+                           onchange="toggleTodo(${t.id}, this.checked)" />
+                    <span class="${t.completed ? 'completed' : ''}">${t.task}</span>
+                </li>
+            `).join('');
+        }
+
+        // Add a new todo
+        async function addTodo() {
+            const input = document.getElementById('taskInput');
+            const task = input.value.trim();
+            if (!task) return;
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json'},
+                body: JSON.stringify({ task })
+            });
+            input.value = '';
+            fetchTodos();
+        }
+
+        // Toggle completion
+
+        async function toggleTodo(id, completed) {
+            await fetch(`${API_URL}/${id}`,{
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ completed })
+            });
+            fetchTodos();
+        }
+
+        // Event listeners and the initial load
+        document.getElementById('addBtn').addEventListener('click', addTodo);
+        fetchTodos();
+        setInterval(fetchTodos, 5000); //optional auto-refresh (5s) , check refresh working correctly or not
+    </script>
+</body>
+</html>

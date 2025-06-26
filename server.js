@@ -38,7 +38,7 @@ app.get('/api/todos', async (req, res) => {
 });
 
 // Post a new todo
-app.get('/api/todos', async (req, res) => {
+app.post('/api/todos', async (req, res) => {
     const { task } = req.body
     try{
         const result = await pool.query('INSERT INTO todos (task) VALUES ($1) RETURNING *', [task]); // The Attribute name should be correct
